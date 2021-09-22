@@ -43,6 +43,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
+
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.Validate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -88,11 +90,15 @@ public final class PcpPortMapper implements PortMapper {
 
         // Perform commands to try to grab gateway addresses
         List<MapperIoUtils.ProcessRequest> processReqs = new ArrayList<>();
-        processReqs.add(new MapperIoUtils.ProcessRequest("netstat", "-rn")); //linux mac and windows -- but seems wrong for windows
-        processReqs.add(new MapperIoUtils.ProcessRequest("route", "-n")); // linux
-        processReqs.add(new MapperIoUtils.ProcessRequest("route", "-n", "get", "default")); // mac
-        processReqs.add(new MapperIoUtils.ProcessRequest("ipconfig")); // windows
-        processReqs.add(new MapperIoUtils.ProcessRequest("ifconfig")); // linux (and mac?)
+        if (SystemUtils.IS_OS_WINDOWS) {
+            processReqs.add(new MapperIoUtils.ProcessRequest("netstat", "-rn")); //linux mac and windows
+            processReqs.add(new MapperIoUtils.ProcessRequest("ipconfig")); // windows
+        } else {
+            processReqs.add(new MapperIoUtils.ProcessRequest("netstat", "-rn")); //linux mac and windows
+            processReqs.add(new MapperIoUtils.ProcessRequest("route", "-n")); // linux
+            processReqs.add(new MapperIoUtils.ProcessRequest("route", "-n", "get", "default")); // mac
+            processReqs.add(new MapperIoUtils.ProcessRequest("ifconfig")); // linux (and mac?)
+        }
         runProcesses(processBus, processReqs, 10000L);
         
         

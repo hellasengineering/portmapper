@@ -51,6 +51,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,11 +96,15 @@ public final class NatPmpPortMapper implements PortMapper {
 
         // Perform commands to try to grab gateway addresses
         List<MapperIoUtils.ProcessRequest> processReqs = new ArrayList<>();
-        processReqs.add(new MapperIoUtils.ProcessRequest("netstat", "-rn")); //linux mac and windows
-        processReqs.add(new MapperIoUtils.ProcessRequest("route", "-n")); // linux
-        processReqs.add(new MapperIoUtils.ProcessRequest("route", "-n", "get", "default")); // mac
-        processReqs.add(new MapperIoUtils.ProcessRequest("ipconfig")); // windows
-        processReqs.add(new MapperIoUtils.ProcessRequest("ifconfig")); // linux (and mac?)
+        if (SystemUtils.IS_OS_WINDOWS) {
+            processReqs.add(new MapperIoUtils.ProcessRequest("netstat", "-rn")); //linux mac and windows
+            processReqs.add(new MapperIoUtils.ProcessRequest("ipconfig")); // windows
+        } else {
+            processReqs.add(new MapperIoUtils.ProcessRequest("netstat", "-rn")); //linux mac and windows
+            processReqs.add(new MapperIoUtils.ProcessRequest("route", "-n")); // linux
+            processReqs.add(new MapperIoUtils.ProcessRequest("route", "-n", "get", "default")); // mac
+            processReqs.add(new MapperIoUtils.ProcessRequest("ifconfig")); // linux (and mac?)
+        }
         runProcesses(processBus, processReqs, 10000L);
         
         
